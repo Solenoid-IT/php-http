@@ -6,6 +6,7 @@ namespace Solenoid\HTTP;
 
 
 
+use \Solenoid\HTTP\Request;
 use \Solenoid\HTTP\Response;
 
 
@@ -47,15 +48,30 @@ class Server
     # Returns [void]
     public static function set_cors
     (
-        string $origin = '*',
+        array $origins     = [],
 
-        array $methods = [],
-        array $headers = []
+        array $methods     = [],
+        array $headers     = [],
+
+        bool  $credentials = false
     )
     {
+        // (Getting the value)
+        $current_origin = Request::read()::$origin;
+
+        if ( $origins && !in_array( $current_origin, $origins ) )
+        {// Match failed
+            // Returning the value
+            return;
+        }
+
+
+
         // (Getting the values)
-        $methods = $methods ? implode( ', ', $methods ) : '*';
-        $headers = $headers ? implode( ', ', $headers ) : '*';
+        $origin      = $current_origin;
+        $methods     = $methods ? implode( ', ', $methods ) : '*';
+        $headers     = $headers ? implode( ', ', $headers ) : '*';
+        $credentials = $credentials ? 'true' : 'false';
 
 
 
@@ -63,6 +79,7 @@ class Server
         header("Access-Control-Allow-Origin: $origin");
         header("Access-Control-Allow-Methods: $methods");
         header("Access-Control-Allow-Headers: $headers");
+        header("Access-Control-Allow-Credentials: $credentials");
     }
 
 
