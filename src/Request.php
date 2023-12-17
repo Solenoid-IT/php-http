@@ -33,7 +33,7 @@ class Request
     public static array  $headers;
     public static string $body;
 
-    public static string $origin;
+    public static string $base_url;
     public static string $url;
 
 
@@ -68,8 +68,8 @@ class Request
         self::$headers         = $headers;
         self::$body            = file_get_contents( 'php://input' );
 
-        self::$origin          = self::$protocol . '://' . self::$host . ( in_array( self::$port, [ 80, 443 ] ) ? '' : ':' . self::$port );
-        self::$url             = self::$origin . $_SERVER['REQUEST_URI'];
+        self::$base_url        = self::$protocol . '://' . self::$host . ( in_array( self::$port, [ 80, 443 ] ) ? '' : ':' . self::$port );
+        self::$url             = self::$base_url . $_SERVER['REQUEST_URI'];
     }
 
 
@@ -299,7 +299,7 @@ class Request
             'headers'         => self::$headers,
             'body'            => self::$body,
 
-            'origin'          => self::$origin,
+            'origin'          => self::$base_url,
             'url'             => self::$url
         ]
         ;

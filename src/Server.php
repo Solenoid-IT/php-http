@@ -57,9 +57,9 @@ class Server
     )
     {
         // (Getting the value)
-        $current_origin = Request::read()::$origin;
+        $current_origin = Request::read()::$headers['Origin'];
 
-        if ( $origins && !in_array( $current_origin, $origins ) )
+        if ( !$current_origin || ( $origins && !in_array( $current_origin, $origins ) ) )
         {// Match failed
             // Returning the value
             return;
