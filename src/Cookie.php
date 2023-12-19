@@ -52,7 +52,7 @@ class Cookie
         string  $name,
 
         string  $domain    = '',
-        string  $path      = '/',
+        string  $path      = '',
 
         bool    $secure    = false,
         bool    $http_only = false,
@@ -151,7 +151,7 @@ class Cookie
     }
 
     # Returns [bool] | Throws [Exception]
-    public static function delete (string $name, string $domain = '', string $path = '/')
+    public static function delete (string $name, string $domain = '', string $path = '')
     {
         // (Setting the cookie)
         $result = Cookie::create( $name, $domain, $path )->set( '', -1 );
