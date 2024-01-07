@@ -17,6 +17,8 @@ class Session
     private ?int   $duration;
     private bool   $persistent;
 
+    private array  $event_listeners;
+
 
 
     public ?string $found_id;
@@ -53,6 +55,11 @@ class Session
         $this->id            = null;
 
         $this->writing       = null;
+
+
+
+        // (Setting the value)
+        $this->event_listeners = [];
     }
 
     # Returns [Session]
@@ -238,8 +245,32 @@ class Session
 
 
 
+        // (Triggering the event)
+        $this->trigger_event( 'save' );
+
+
+
         // Returning the value
         return $this;
+    }
+
+
+
+    # Returns [void]
+    public function add_event_listener (string $type, callable $callback)
+    {
+        // (Getting the value)
+        $this->event_listeners[ $type ][] = $callback;
+    }
+
+    # Returns [void]
+    public function trigger_event (string $type, array $data = [])
+    {
+        foreach ($this->event_listeners[ $type ] as $event_listener)
+        {// Processing each entry
+            // (Calling the function)
+            $event_listener( $data );
+        }
     }
 
 
