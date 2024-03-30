@@ -33,6 +33,8 @@ class Request
     public static array  $headers;
     public static string $body;
 
+    public static array  $cookies;
+
     public static string $base_url;
     public static string $url;
 
@@ -67,6 +69,8 @@ class Request
 
         self::$headers         = $headers;
         self::$body            = file_get_contents( 'php://input' );
+
+        self::$cookies         = $_COOKIE;
 
         self::$base_url        = self::$protocol . '://' . self::$host . ( in_array( self::$port, [ 80, 443 ] ) ? '' : ':' . self::$port );
         self::$url             = self::$base_url . $_SERVER['REQUEST_URI'];
