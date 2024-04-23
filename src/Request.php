@@ -315,7 +315,7 @@ class Request
     public static function summarize ()
     {
         // Returning the value
-        return  ( self::$proxy_client_ip ? self::$proxy_client_ip . ' via ' : '' ) . self::$client_ip . ' - ' . self::get_route() . ' - ' . '"' . self::$headers['User-Agent'] . '"';
+        return ( self::$proxy_client_ip ? self::$proxy_client_ip . ' via ' : '' ) . self::$client_ip . ' - ' . self::get_route() . ' -> ' . '"' . self::$headers['Action'] ?? '' . '"' . ' - ' . http_response_code() . ' - ' . '"' . self::$headers['User-Agent'] . '"';
     }
 
 
