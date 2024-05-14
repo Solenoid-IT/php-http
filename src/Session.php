@@ -34,6 +34,8 @@ class Session
 
     public ?int    $writing;
 
+    public bool    $closed;
+
 
 
     # Returns [self]
@@ -55,6 +57,8 @@ class Session
         $this->id            = null;
 
         $this->writing       = null;
+
+        $this->closed        = false;
 
 
 
@@ -220,6 +224,12 @@ class Session
     # Returns [self|false] | Throws [Exception]
     public function write ()
     {
+        if ( $this->closed )
+        {// (Session has been closed)
+            // Returning the value
+            return false;
+        }
+
         if ( $this->id === null )
         {// (Session has not been started)
             // Returning the value
@@ -247,6 +257,20 @@ class Session
 
         // (Triggering the event)
         $this->trigger_event( 'save' );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    # Returns [self]
+    public function close ()
+    {
+        // (Setting the value)
+        $this->closed = true;
 
 
 
