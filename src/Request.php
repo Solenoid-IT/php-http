@@ -13,30 +13,30 @@ use \Solenoid\HTTP\Retry;
 
 class Request
 {
-    private static Request $instance;
+    private static self $instance;
 
 
 
-    public static string $client_ip;
-    public static string $server_ip;
-    public static string $proxy_client_ip;
+    public string $client_ip;
+    public string $server_ip;
+    public string $proxy_client_ip;
 
-    public static string $protocol;
-    public static string $host;
-    public static string $port;
+    public string $protocol;
+    public string $host;
+    public string $port;
 
-    public static string $path;
-    public static string $query;
+    public string $path;
+    public string $query;
 
-    public static string $method;
+    public string $method;
 
-    public static array  $headers;
-    public static string $body;
+    public array  $headers;
+    public string $body;
 
-    public static array  $cookies;
+    public array  $cookies;
 
-    public static string $base_url;
-    public static string $url;
+    public string $base_url;
+    public string $url;
 
 
 
@@ -44,7 +44,7 @@ class Request
     private function __construct ()
     {
         // (Getting the values)
-        $host      = self::get_host();
+        $host      = $this->get_host();
 
         $server_ip = dns_get_record( $host, DNS_A );
         $server_ip = $server_ip ? $server_ip[0]['ip'] : '';
@@ -54,26 +54,26 @@ class Request
 
 
         // (Getting the values)
-        self::$client_ip       = $_SERVER['REMOTE_ADDR'];
-        self::$server_ip       = $server_ip;
-        self::$proxy_client_ip = $headers['X-Forwarded-For'] ?? '';
+        $this->client_ip       = $_SERVER['REMOTE_ADDR'];
+        $this->server_ip       = $server_ip;
+        $this->proxy_client_ip = $headers['X-Forwarded-For'] ?? '';
 
-        self::$protocol        = ( isset( $_SERVER['HTTPS'] ) && strtolower( $_SERVER['HTTPS'] ) === 'on' )  ? 'https' : 'http';
-        self::$host            = $host;
-        self::$port            = $_SERVER['SERVER_PORT'];
+        $this->protocol        = ( isset( $_SERVER['HTTPS'] ) && strtolower( $_SERVER['HTTPS'] ) === 'on' )  ? 'https' : 'http';
+        $this->host            = $host;
+        $this->port            = $_SERVER['SERVER_PORT'];
 
-        self::$path            = preg_replace( '/\?[^\?]*$/', '', $_SERVER['REQUEST_URI'] );
-        self::$query           = explode( '?', $_SERVER['REQUEST_URI'] )[1] ?? '';
+        $this->path            = preg_replace( '/\?[^\?]*$/', '', $_SERVER['REQUEST_URI'] );
+        $this->query           = explode( '?', $_SERVER['REQUEST_URI'] )[1] ?? '';
 
-        self::$method          = $_SERVER['REQUEST_METHOD'];
+        $this->method          = $_SERVER['REQUEST_METHOD'];
 
-        self::$headers         = $headers;
-        self::$body            = file_get_contents( 'php://input' );
+        $this->headers         = $headers;
+        $this->body            = file_get_contents( 'php://input' );
 
-        self::$cookies         = $_COOKIE;
+        $this->cookies         = $_COOKIE;
 
-        self::$base_url        = self::$protocol . '://' . self::$host . ( in_array( self::$port, [ 80, 443 ] ) ? '' : ':' . self::$port );
-        self::$url             = self::$base_url . $_SERVER['REQUEST_URI'];
+        $this->base_url        = $this->protocol . '://' . $this->host . ( in_array( $this->port, [ 80, 443 ] ) ? '' : ':' . $this->port );
+        $this->url             = $this->base_url . $_SERVER['REQUEST_URI'];
     }
 
 
@@ -89,16 +89,11 @@ class Request
 
 
 
-        if ( isset( self::$instance ) )
-        {// Value found
-            // Returning the value
-            return self::$instance;
+        if ( !isset( self::$instance ) )
+        {// Value not found
+            // (Creating a Request)
+            self::$instance = new Request();
         }
-
-
-
-        // (Creating a Request)
-        self::$instance = new Request();
 
 
 
@@ -109,9 +104,9 @@ class Request
 
 
     # Returns [assoc]
-    public static function parse_query (?string $query = null)
+    public function parse_query (?string $query = null)
     {
-        if ( $query === null && isset( self::$query ) ) $query = self::$query;
+        if ( $query === null && isset( $this->query ) ) $query = $this->query;
 
 
 
@@ -198,11 +193,11 @@ class Request
     }
 
     # Returns [bool]
-    public static function forward (string $url, ?Retry $retry = null)
+    public function forward (string $url, ?Retry $retry = null)
     {
         // (Getting the value)
-        $headers                    = self::$headers;
-        $headers['X-Forwarded-For'] = self::$client_ip;
+        $headers                    = $this->headers;
+        $headers['X-Forwarded-For'] = $this->client_ip;
 
 
 
@@ -215,9 +210,9 @@ class Request
         $response = self::send
         (
             $url,
-            self::$method,
+            $this->method,
             $headers,
-            self::$body,
+            $this->body,
 
             '',
             false,
@@ -250,14 +245,14 @@ class Request
 
 
     # Returns [string]
-    public static function get_host ()
+    public function get_host ()
     {
         // Returning the value
         return $_SERVER['SERVER_NAME'];
     }
 
     # Returns [string]
-    public static function get_route (bool $exclude_method = false)
+    public function get_route (bool $exclude_method = false)
     {
         // (Setting the value)
         $components = [];
@@ -267,11 +262,11 @@ class Request
         if ( !$exclude_method )
         {// Match OK
             // (Appending the value)
-            $components[] = strtoupper( self::$method );
+            $components[] = strtoupper( $this->method );
         }
 
         // (Appending the value)
-        $components[] = self::$path . ( self::$query ? '?' . self::$query : '' );
+        $components[] = $this->path . ( $this->query ? '?' . $this->query : '' );
 
 
 
@@ -282,29 +277,29 @@ class Request
 
 
     # Returns [assoc]
-    public static function to_array ()
+    public function to_array ()
     {
         // Returning the value
         return
         [
-            'client_ip'       => self::$client_ip,
-            'server_ip'       => self::$server_ip,
-            'proxy_client_ip' => self::$proxy_client_ip,
+            'client_ip'       => $this->client_ip,
+            'server_ip'       => $this->server_ip,
+            'proxy_client_ip' => $this->proxy_client_ip,
 
-            'protocol'        => self::$protocol,
-            'host'            => self::$host,
-            'port'            => self::$port,
+            'protocol'        => $this->protocol,
+            'host'            => $this->host,
+            'port'            => $this->port,
 
-            'path'            => self::$path,
-            'query'           => self::$query,
+            'path'            => $this->path,
+            'query'           => $this->query,
 
-            'method'          => self::$method,
+            'method'          => $this->method,
 
-            'headers'         => self::$headers,
-            'body'            => self::$body,
+            'headers'         => $this->headers,
+            'body'            => $this->body,
 
-            'origin'          => self::$base_url,
-            'url'             => self::$url
+            'origin'          => $this->base_url,
+            'url'             => $this->url
         ]
         ;
     }
@@ -312,10 +307,10 @@ class Request
 
 
     # Returns [string]
-    public static function summarize ()
+    public function summarize ()
     {
         // Returning the value
-        return ( self::$proxy_client_ip ? self::$proxy_client_ip . ' via ' : '' ) . self::$client_ip . ' - ' . self::get_route() . ' -> ' . '"' . ( self::$headers['Action'] ?? '' ) . '"' . ' - ' . http_response_code() . ' - ' . '"' . self::$headers['User-Agent'] . '"';
+        return ( $this->proxy_client_ip ? $this->proxy_client_ip . ' via ' : '' ) . $this->client_ip . ' - ' . self::get_route() . ' -> ' . '"' . ( $this->headers['Action'] ?? '' ) . '"' . ' - ' . http_response_code() . ' - ' . '"' . $this->headers['User-Agent'] . '"';
     }
 
 
