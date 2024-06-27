@@ -6,6 +6,7 @@ namespace Solenoid\HTTP;
 
 
 
+use \Solenoid\HTTP\URL;
 use \Solenoid\HTTP\CurlRequest;
 use \Solenoid\HTTP\Retry;
 
@@ -18,15 +19,13 @@ class Request
 
 
     public string $client_ip;
+    public int    $client_port;
+
+    public string $server_name;
     public string $server_ip;
+    public int    $server_port;
+
     public string $proxy_client_ip;
-
-    public string $protocol;
-    public string $host;
-    public string $port;
-
-    public string $path;
-    public string $query;
 
     public string $method;
 
@@ -36,53 +35,61 @@ class Request
     public array  $cookies;
 
     public string $base_url;
-    public string $url;
+    public URL $url;
 
 
 
     # Returns [self]
     private function __construct ()
     {
-        // (Getting the values)
-        $host      = $this->get_host();
-
-        $server_ip = dns_get_record( $host, DNS_A );
-        $server_ip = $server_ip ? $server_ip[0]['ip'] : '';
-
-        $headers   = getallheaders();
+        // (Getting the value)
+        $this->headers = getallheaders();
 
 
 
         // (Getting the values)
         $this->client_ip       = $_SERVER['REMOTE_ADDR'];
-        $this->server_ip       = $server_ip;
-        $this->proxy_client_ip = $headers['X-Forwarded-For'] ?? '';
+        $this->client_port     = $_SERVER['REMOTE_PORT'];
 
-        $this->protocol        = ( isset( $_SERVER['HTTPS'] ) && strtolower( $_SERVER['HTTPS'] ) === 'on' )  ? 'https' : 'http';
-        $this->host            = $host;
-        $this->port            = $_SERVER['SERVER_PORT'];
 
-        $this->path            = preg_replace( '/\?[^\?]*$/', '', $_SERVER['REQUEST_URI'] );
-        $this->query           = explode( '?', $_SERVER['REQUEST_URI'] )[1] ?? '';
 
-        $this->method          = $_SERVER['REQUEST_METHOD'];
+        // (Getting the values)
+        $this->server_name     = $_SERVER['SERVER_NAME'];
+        $this->server_ip       = self::resolve( $this->server_name );
+        $this->server_port     = $_SERVER['SERVER_PORT'];
 
-        $this->headers         = $headers;
-        $this->body            = file_get_contents( 'php://input' );
+        $this->proxy_client_ip = $this->headers['X-Forwarded-For'] ?? '';
 
-        $this->cookies         = $_COOKIE;
 
-        $this->base_url        = $this->protocol . '://' . $this->host . ( in_array( $this->port, [ 80, 443 ] ) ? '' : ':' . $this->port );
-        $this->url             = $this->base_url . $_SERVER['REQUEST_URI'];
+
+        // (Getting the values)
+        $this->method  = $_SERVER['REQUEST_METHOD'];
+        $this->body    = file_get_contents( 'php://input' );
+        $this->cookies = &$_COOKIE;
+
+
+
+        // (Getting the values)
+        $this->url = new URL
+        (
+            ( isset( $_SERVER['HTTPS'] ) && strtolower( $_SERVER['HTTPS'] ) === 'on' )  ? 'https' : 'http',
+            null,
+            null,
+            $this->server_name,
+            $this->server_port,
+            preg_replace( '/\?[^\?]*$/', '', $_SERVER['REQUEST_URI'] ),
+            explode( '?', $_SERVER['REQUEST_URI'] )[1]
+        )
+        ;
     }
 
 
 
-    # Returns [Request|false]
-    public static function read ()
+    # Returns [self|false]
+    public static function fetch ()
     {
-        if ( !self::exists() )
-        {// (Request not found)
+        if ( !isset( $_SERVER ) )
+        {// (PHP is not running under webserver mode)
             // Returning the vaiue
             return false;
         }
@@ -103,57 +110,22 @@ class Request
 
 
 
-    # Returns [assoc]
-    public function parse_query (?string $query = null)
+    # Returns [string]
+    public static function resolve (string $fqdn)
     {
-        if ( $query === null && isset( $this->query ) ) $query = $this->query;
-
-
-
-        // (Setting the value)
-        $parsed = [];
-
         // (Getting the value)
-        $kv_entries = explode( '&', $query );
+        $ip = dns_get_record( $fqdn, DNS_A );
 
-        foreach ($kv_entries as $kv_entry)
-        {// Processing each entry
-            // (Getting the value)
-            $kv_parts = explode( '=', $kv_entry );
-
-            if ( $kv_parts[0] === '' )
-            {// Match OK
-                // Continuing the iteration
-                continue;
-            }
-
-
-
-            if ( count( $kv_parts ) === 1 )
-            {// Match OK
-                // (Setting the value)
-                $kv_parts[1] = '';
-            }
-
-
-
-            // (Getting the value)
-            $parsed[ rawurldecode( $kv_parts[0] ) ] = rawurldecode( $kv_parts[1] );
+        if ( !$ip )
+        {// (Unable to resolve the FQDN)
+            // Returning the value
+            return '';
         }
 
 
 
         // Returning the value
-        return $parsed;
-    }
-
-
-
-    # Returns [bool]
-    public static function exists ()
-    {
-        // Returning the value
-        return isset( $_SERVER['REQUEST_METHOD'] );
+        return $ip[0]['ip'];
     }
 
 
@@ -245,33 +217,10 @@ class Request
 
 
     # Returns [string]
-    public function get_host ()
+    public function fetch_route ()
     {
         // Returning the value
-        return $_SERVER['SERVER_NAME'];
-    }
-
-    # Returns [string]
-    public function get_route (bool $exclude_method = false)
-    {
-        // (Setting the value)
-        $components = [];
-
-
-
-        if ( !$exclude_method )
-        {// Match OK
-            // (Appending the value)
-            $components[] = strtoupper( $this->method );
-        }
-
-        // (Appending the value)
-        $components[] = $this->path . ( $this->query ? '?' . $this->query : '' );
-
-
-
-        // Returning the value
-        return implode( ' ', $components );
+        return $this->method . ' ' . $this->path . ( $this->query ? '?' . $this->query : '' );
     }
 
 
@@ -280,37 +229,7 @@ class Request
     public function to_array ()
     {
         // Returning the value
-        return
-        [
-            'client_ip'       => $this->client_ip,
-            'server_ip'       => $this->server_ip,
-            'proxy_client_ip' => $this->proxy_client_ip,
-
-            'protocol'        => $this->protocol,
-            'host'            => $this->host,
-            'port'            => $this->port,
-
-            'path'            => $this->path,
-            'query'           => $this->query,
-
-            'method'          => $this->method,
-
-            'headers'         => $this->headers,
-            'body'            => $this->body,
-
-            'origin'          => $this->base_url,
-            'url'             => $this->url
-        ]
-        ;
-    }
-
-
-
-    # Returns [string]
-    public function summarize ()
-    {
-        // Returning the value
-        return ( $this->proxy_client_ip ? $this->proxy_client_ip . ' via ' : '' ) . $this->client_ip . ' - ' . self::get_route() . ' -> ' . '"' . ( $this->headers['Action'] ?? '' ) . '"' . ' - ' . http_response_code() . ' - ' . '"' . $this->headers['User-Agent'] . '"';
+        return json_decode( json_encode($this), true );
     }
 
 
@@ -318,8 +237,31 @@ class Request
     # Returns [string]
     public function __toString ()
     {
+        // (Getting the values)
+        $client = ( $this->proxy_client_ip ? $this->proxy_client_ip . ' via ' : '' ) . $this->client_ip;
+        $route  = self::fetch_route();
+
+
+
+        // (Setting the value)
+        $base_headers = [];
+
+        foreach ( [ 'Action', 'User-Agent' ] as $type )
+        {// Processing each entry
+            if ( isset( $this->headers[$type] ) )
+            {// Value found
+                // (Appending the value)
+                $base_headers[] = '"' . $this->headers[$type] . '"';
+            }
+        }
+
+        // (Getting the value)
+        $base_headers = implode( ', ', $base_headers );
+
+
+
         // Returning the value
-        return $this->summarize();
+        return implode( ' - ', [ $client, $route, http_response_code(), $base_headers ] );
     }
 }
 

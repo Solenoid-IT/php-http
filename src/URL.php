@@ -16,7 +16,7 @@ class URL
     public string  $host;
     public ?int    $port;
 
-    public ?string $path;
+    public string  $path;
     public ?string $query;
     public ?string $fragment;
 
@@ -27,15 +27,15 @@ class URL
     (
         string  $protocol,
 
-        ?string $username,
-        ?string $password,
+        ?string $username = null,
+        ?string $password = null,
 
         string  $host,
-        ?int    $port,
+        ?int    $port     = null,
 
-        ?string $path,
-        ?string $query,
-        ?string $fragment
+        string  $path,
+        ?string $query    = null,
+        ?string $fragment = null
     )
     {
         // (Getting the values)
@@ -52,52 +52,18 @@ class URL
         $this->fragment = $fragment;
     }
 
-    # Returns [URL]
-    public static function create
-    (
-        string  $protocol,
-
-        ?string $username,
-        ?string $password,
-
-        string  $host,
-        ?int    $port,
-
-        ?string $path,
-        ?string $query,
-        ?string $fragment
-    )
-    {
-        // Returning the value
-        return new URL
-        (
-            $protocol,
-
-            $username,
-            $password,
-
-            $host,
-            $port,
-
-            $path,
-            $query,
-            $fragment
-        )
-        ;
-    }
 
 
-
-    # Returns [URL]
-    public static function parse (string $url)
+    # Returns [self]
+    public static function parse (string $value)
     {
         // (Getting the value)
-        $parts = parse_url( $url );
+        $parts = parse_url($value);
 
 
 
         // Returning the value
-        return URL::create
+        return new URL
         (
             $parts['scheme'],
 
@@ -114,10 +80,52 @@ class URL
         ;
     }
 
+    # Returns [assoc]
+    public static function parse_query (string $query)
+    {
+        // (Setting the value)
+        $data = [];
+
+
+
+        // (Getting the value)
+        $kv_entries = explode( '&', $query );
+
+        foreach ( $kv_entries as $kv_entry )
+        {// Processing each entry
+            // (Getting the value)
+            $kv_parts = explode( '=', $kv_entry );
+
+            if ( $kv_parts[0] === '' )
+            {// Match OK
+                // Continuing the iteration
+                continue;
+            }
+
+
+
+            if ( count($kv_parts) === 1 )
+            {// Match OK
+                // (Setting the value)
+                $kv_parts[1] = '';
+            }
+
+
+
+            // (Getting the value)
+            $data[ rawurldecode( $kv_parts[0] ) ] = rawurldecode( $kv_parts[1] );
+        }
+
+
+
+        // Returning the value
+        return $data;
+    }
+
 
 
     # Returns [string]
-    public function summarize ()
+    public function fetch_base ()
     {
         // Returning the value
         return
@@ -129,7 +137,25 @@ class URL
                 .
             $this->host
                 .
-            ( $this->port ? ( ':' . $this->port ) : '' )
+            ( $this->port ? ( in_array( $this->port, [ 80, 443 ] ) ? '' : ( ':' . $this->port ) ) : '' )
+        ;
+    }
+
+    # Returns [assoc]
+    public function fetch_params ()
+    {
+        // Returning the value
+        return $this->query === null ? [] : self::parse_query( $this->query );
+    }
+
+
+
+    # Returns [string]
+    public function __toString ()
+    {
+        // Returning the value
+        return
+            $this->fetch_base()
                 .
             $this->path
                 .
@@ -137,13 +163,6 @@ class URL
                 .
             ( $this->fragment ? ( '#' . $this->fragment ) : '' )
         ;
-    }
-
-    # Returns [string]
-    public function __toString ()
-    {
-        // Returning the value
-        return $this->summarize();
     }
 }
 
