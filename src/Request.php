@@ -220,7 +220,7 @@ class Request
     public function fetch_route ()
     {
         // Returning the value
-        return $this->method . ' ' . $this->path . ( $this->query ? '?' . $this->query : '' );
+        return $this->method . ' ' . $this->url->path . ( $this->url->query ? '?' . $this->url->query : '' );
     }
 
 
@@ -231,8 +231,6 @@ class Request
         // Returning the value
         return json_decode( json_encode($this), true );
     }
-
-
 
     # Returns [string]
     public function __toString ()
