@@ -13,51 +13,15 @@ use \Solenoid\HTTP\Response;
 
 class Server
 {
-    public static ?Response $response = null;
+    public static Response $response;
 
 
 
     # Returns [void]
-    public static function set_status_code (int $code)
-    {
-        // (Setting the response code)
-        http_response_code( $code );
-    }
-
-
-
-    # Returns [void]
-    public static function send_header (string $value, bool $replace = true)
-    {
-        // (Sending the header)
-        header( $value, $replace );
-    }
-
-    # Returns [void]
-    public static function send_headers (array $values, bool $replace = true)
-    {
-        foreach ($values as $value)
-        {// Processing each entry
-            // (Sending the header)
-            self::send_header( $value, $replace );
-        }
-    }
-
-
-
-    # Returns [void]
-    public static function set_cors
-    (
-        array $origins     = [],
-
-        array $methods     = [],
-        array $headers     = [],
-
-        bool  $credentials = false
-    )
+    public static function set_cors (array $origins = [], array $methods = [], array $headers = [], bool $credentials = false)
     {
         // (Getting the value)
-        $current_origin = Request::read()->headers['Origin'];
+        $current_origin = Request::fetch()->headers['Origin'];
 
         if ( !$current_origin || ( $origins && !in_array( $current_origin, $origins ) ) )
         {// Match failed
@@ -90,8 +54,6 @@ class Server
         // (Printing the value)
         echo $message;
 
-
-
         if ( $flush )
         {// Value is true
             // Printing the value
@@ -118,25 +80,25 @@ class Server
 
 
 
-        // (Setting the http status)
-        self::set_status_code( $response->status_code );
+        // (Setting the response status-code)
+        http_response_code( $response->status->code );
 
 
 
-        foreach ($response->headers as $k => $v)
+        foreach ( $response->headers as $k => $v )
         {// Processing each entry
-            // (Sending the headers)
-            self::send_header( "$k: $v" );
+            // (Sending the header)
+            header("$k: $v");
         }
 
 
 
         // Printing the value
-        echo $response->data;
+        echo $response->body;
 
 
 
-        // (Setting the value)
+        // (Getting the value)
         self::$response = &$response;
     }
 }

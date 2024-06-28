@@ -148,17 +148,19 @@ class Request
     {
         // Returning the value
         return
-            CurlRequest::create
             (
-                $url,
-                $method,
-                $headers,
-                $body,
+                new CurlRequest
+                (
+                    $url,
+                    $method,
+                    $headers,
+                    $body,
 
-                $response_type,
+                    $response_type,
 
-                $raw,
-                $options
+                    $raw,
+                    $options
+                )
             )
                 ->send( $retry )
         ;

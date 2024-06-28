@@ -46,36 +46,6 @@ class Cookie
         $this->same_site = $same_site;
     }
 
-    # Returns [Cookie]
-    public static function create
-    (
-        string  $name,
-
-        string  $domain    = '',
-        string  $path      = '',
-
-        bool    $secure    = false,
-        bool    $http_only = false,
-
-        ?string $same_site = 'Lax'
-    )
-    {
-        // Returning the value
-        return new Cookie
-        (
-            $name,
-            
-            $domain,
-            $path,
-
-            $secure,
-            $http_only,
-            
-            $same_site
-        )
-        ;
-    }
-
 
 
     # Returns [bool] | Throws [Exception]

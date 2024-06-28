@@ -6,50 +6,26 @@ namespace Solenoid\HTTP;
 
 
 
+use \Solenoid\HTTP\Status;
+
+
+
 class Response
 {
-    public int    $status_code;
+    public Status $status;
 
     public array  $headers;
-    public string $data;
+    public string $body;
 
 
 
     # Returns [self]
-    public function __construct
-    (
-        int    $status_code = 200,
-
-        array  $headers     = [],
-        string $data        = ''
-    )
+    public function __construct (?Status $status = null, array $headers = [], mixed $body = '')
     {
         // (Getting the values)
-        $this->status_code = $status_code;
-
-        $this->headers     = $headers;
-        $this->data        = $data;
-    }
-
-    # Returns [Response]
-    public static function create
-    (
-        int    $status_code = 200,
-
-        array  $headers     = [],
-        string $data        = ''
-    )
-    {
-        // Returning the value
-        return
-            new Response
-            (
-                $status_code,
-
-                $headers,
-                $data
-            )
-        ;
+        $this->status  = $status ?? new Status();
+        $this->headers = $headers;
+        $this->body    = is_string($body) ? $body : json_encode($body);
     }
 }
 

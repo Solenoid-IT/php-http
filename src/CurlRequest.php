@@ -117,38 +117,6 @@ class CurlRequest
         $this->options       = $options;
     }
 
-    # Returns [CurlRequest]
-    public static function create
-    (
-        string $url,
-        string $method        = 'GET',
-        array  $headers       = [],
-        string $body          = '',
-
-        string $response_type = '',
-
-        bool   $raw           = false,
-
-        array  $options       = []
-    )
-    {
-        // Returning the value
-        return new CurlRequest
-        (
-            $url,
-            $method,
-            $headers,
-            $body,
-
-            $response_type,
-
-            $raw,
-
-            $options
-        )
-        ;
-    }
-
 
 
     # Returns [array<string>]
@@ -157,7 +125,7 @@ class CurlRequest
         // (Setting the value)
         $header_list = [];
 
-        foreach ($headers as $k => $v)
+        foreach ( $headers as $k => $v )
         {// Processing each entry
             // (Appending the value)
             $header_list[] = "$k: $v";
@@ -296,7 +264,7 @@ class CurlRequest
                     // (Setting the value)
                     $h = [];
 
-                    foreach ($headers as $header)
+                    foreach ( $headers as $header )
                     {// Processing each entry
                         // (Getting the value)
                         list( $k, $v ) = explode( ': ', $header );
@@ -328,13 +296,13 @@ class CurlRequest
                     $output
                         :
                     (
-                        CurlResponse::create
+                        new CurlResponse
                         (
-                            Status::create( $info['http_code'], self::STATUS_MESSAGES[ $info['http_code'] ] ?? '' ),
+                            new Status( $info['http_code'], self::STATUS_MESSAGES[ $info['http_code'] ] ?? '' ),
                             $headers,
                             $body,
 
-                            CurlError::create
+                            new CurlError
                             (
                                 $error_code,
                                 curl_strerror( $error_code ),
