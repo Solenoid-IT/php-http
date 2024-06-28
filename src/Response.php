@@ -15,7 +15,7 @@ class Response
     public Status $status;
 
     public array  $headers;
-    public string $body;
+    public mixed  $body;
 
 
 
@@ -25,7 +25,7 @@ class Response
         // (Getting the values)
         $this->status  = $status ?? new Status();
         $this->headers = $headers;
-        $this->body    = is_string($body) ? $body : json_encode($body);
+        $this->body    = $body;
     }
 }
 

@@ -93,6 +93,17 @@ class Server
 
 
 
+        if ( !is_string( $response->body ) )
+        {// (Response body is not a string)
+            // (Sending the header)
+            header('Content-Type: application/json');
+
+            // (Getting the value)
+            $response->body = json_encode( $response->body );
+        }
+
+
+
         // Printing the value
         echo $response->body;
 
