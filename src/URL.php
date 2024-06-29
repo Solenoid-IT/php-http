@@ -73,7 +73,7 @@ class URL
             $parts['host'],
             $parts['port'],
 
-            $parts['path'],
+            $parts['path'] ?? '/',
             $parts['query'],
             $parts['fragment']
         )
