@@ -124,7 +124,7 @@ class Cookie
     public static function delete (string $name, string $domain = '', string $path = '')
     {
         // (Setting the cookie)
-        $result = Cookie::create( $name, $domain, $path )->set( '', -1 );
+        $result = ( new Cookie( $name, $domain, $path ) )->set( '', -1 );
 
         if ( !$result )
         {// (Unable to set the cookie)
