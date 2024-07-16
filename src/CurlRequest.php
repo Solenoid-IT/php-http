@@ -283,7 +283,7 @@ class CurlRequest
                     if ( $this->response_type === 'json' )
                     {// Match OK
                         // (Getting the value)
-                        $body = json_decode( $body, true );
+                        $body = json_decode( $body );
                     }
                 }
 
