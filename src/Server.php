@@ -85,10 +85,10 @@ class Server
 
 
 
-        foreach ( $response->headers as $k => $v )
+        foreach ( $response->headers as $header )
         {// Processing each entry
             // (Sending the header)
-            header("$k: $v");
+            header( $header );
         }
 
 
