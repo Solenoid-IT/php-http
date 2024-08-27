@@ -37,7 +37,7 @@ class ResponseHead
             // (Getting the value)
             $parts = explode( ': ', $header, 2 );
 
-            if ( $parts[0] === $key )
+            if ( strtolower( $parts[0] ) === strtolower( $key ) )
             {// Match OK
                 // Returning the value
                 return $parts[1];
@@ -61,7 +61,7 @@ class ResponseHead
             // (Getting the value)
             $parts = explode( ': ', $header, 2 );
 
-            if ( $parts[0] === $key )
+            if ( strtolower( $parts[0] ) === strtolower( $key ) )
             {// Match OK
                 // (Appending the value)
                 $values[] = $parts[1];

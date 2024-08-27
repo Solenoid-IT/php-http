@@ -123,7 +123,7 @@ class Client
 
         // (Getting the value)
         $body = $parts[ count($parts) - 1 ];
-        $body = strpos( $heads[ count($heads) - 1 ]->get('content-type') ?? '', 'application/json' ) === 0 ? json_decode( $body ) : $body;
+        $body = strpos( $heads[ count($heads) - 1 ]->get('Content-Type') ?? '', 'application/json' ) === 0 ? json_decode( $body, true ) : $body;
 
 
 
