@@ -15,7 +15,7 @@ use \Solenoid\HTTP\Client\ResponseHead;
 class Client
 {
     # Returns [Response|false]
-    public static function send (string $url = '', string $method = 'GET', array $headers = [], mixed $body = '')
+    public static function send (string $url = '', string $method = 'GET', array $headers = [], mixed $body = '', int $conn_timeout = 60, int $exec_timeout = 60, int $max_redirs = 10)
     {
         // (Initializing the curl)
         $curl = curl_init();
@@ -49,10 +49,10 @@ class Client
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
 
-            CURLOPT_CONNECTTIMEOUT => 120,
-            CURLOPT_TIMEOUT        => 120,
+            CURLOPT_CONNECTTIMEOUT => $conn_timeout,
+            CURLOPT_TIMEOUT        => $exec_timeout,
 
-            CURLOPT_MAXREDIRS      => 10,
+            CURLOPT_MAXREDIRS      => $max_redirs,
 
             CURLOPT_SSL_VERIFYHOST => 0,
             CURLOPT_SSL_VERIFYPEER => false,
