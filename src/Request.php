@@ -334,7 +334,7 @@ class Request
     }
 
     # Returns [false|Response]
-    public static function run (string $request, string $url, int $conn_timeout = 10, int $exec_timeout = 10, int $max_redirs = 3)
+    public static function run (string $request, string $url, array $add_headers = [], int $conn_timeout = 10, int $exec_timeout = 10, int $max_redirs = 3)
     {
         // (Getting the value)
         $parsed = self::parse( $request );
@@ -342,7 +342,7 @@ class Request
 
 
         // (Sending the request)
-        $response = Client::send( $url, $parsed['method'], $parsed['headers'], $parsed['body'], $conn_timeout, $exec_timeout, $max_redirs );
+        $response = Client::send( $url, $parsed['method'], array_merge( $parsed['headers'], $add_headers ), $parsed['body'], $conn_timeout, $exec_timeout, $max_redirs );
 
         if ( !$response )
         {// (Request failed)
