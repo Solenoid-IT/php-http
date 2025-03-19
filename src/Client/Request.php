@@ -45,7 +45,7 @@ class Request
         (
             self::LINE_SEPARATOR,
             [
-                "{$this->method} {$this->path} HTTP/{$this->protocol}",
+                "{$this->method} {$this->path} {$this->protocol}",
                 implode( self::LINE_SEPARATOR, $this->headers ),
                 self::LINE_SEPARATOR,
                 $this->body

@@ -10,6 +10,8 @@ use \Solenoid\HTTP\URL;
 use \Solenoid\HTTP\CurlRequest;
 use \Solenoid\HTTP\Retry;
 
+use \Solenoid\HTTP\Client\Client;
+
 
 
 class Request
@@ -262,6 +264,96 @@ class Request
 
         // Returning the value
         return implode( ' - ', [ $client, $route, http_response_code(), $base_headers ] );
+    }
+
+
+
+    # Returns [string]
+    public static function build (string $method, string $path, string $protocol = 'HTTP/1.1', array $headers = [], string $body = '')
+    {
+        // (Getting the value)
+        $request = "$method $path $protocol\r\n";
+
+        foreach ( $headers as $k => $v )
+        {// Processing each entry
+            // (Appending the value)
+            $request .= "$k: $v\r\n";
+        }
+
+        // (Appending the value)
+        $request .= "\r\n$body";
+
+
+
+        // Returning the value
+        return $request;
+    }
+
+    # Returns [assoc]
+    public static function parse (string $request)
+    {
+        // (Getting the value)
+        $parts = explode( "\r\n\r\n", $request, 2 );
+
+
+
+        // (Setting the value)
+        $headers = [];
+
+        foreach ( explode( "\r\n", $parts[0] ) as $i => $header )
+        {// Processing each entry
+            if ( $i === 0 )
+            {// (Line is the first)
+                // (Getting the value)
+                [ $method, $path, $protocol ] = explode( ' ', $header );
+            }
+            else
+            {// (Line is not the first)
+                // (Appending the value)
+                $headers[] = $header;
+            }
+        }
+
+
+
+        // (Getting the value)
+        $body = $parts[1] ?? '';
+
+
+
+        // Returning the value
+        return
+        [
+            'method'   => $method,
+            'path'     => $path,
+            'protocol' => $protocol,
+            'headers'  => $headers,
+            'body'     => $body
+        ]
+        ;
+    }
+
+    # Returns [false|Response]
+    public static function run (string $request, string $url, int $conn_timeout = 10, int $exec_timeout = 10, int $max_redirs = 3)
+    {
+        // (Getting the value)
+        $parsed = self::parse( $request );
+
+
+
+        // (Sending the request)
+        $response = Client::send( $url, $parsed['method'], $parsed['headers'], $parsed['body'], $conn_timeout, $exec_timeout, $max_redirs );
+
+        if ( !$response )
+        {// (Request failed)
+            // Returning the value
+            return false;
+        }
+
+
+
+        // Returning the value
+        return $response;
     }
 }
 
