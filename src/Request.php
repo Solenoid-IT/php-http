@@ -274,10 +274,10 @@ class Request
         // (Getting the value)
         $request = "$method $path $protocol\r\n";
 
-        foreach ( $headers as $k => $v )
+        foreach ( $headers as $header )
         {// Processing each entry
             // (Appending the value)
-            $request .= "$k: $v\r\n";
+            $request .= "$header\r\n";
         }
 
         // (Appending the value)
