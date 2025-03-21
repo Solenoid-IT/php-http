@@ -334,10 +334,15 @@ class Request
     }
 
     # Returns [false|Response]
-    public static function run (string $request, string $url, array $add_headers = [], int $conn_timeout = 10, int $exec_timeout = 10, int $max_redirs = 3)
+    public static function run (string $request, string $host, array $add_headers = [], int $conn_timeout = 10, int $exec_timeout = 10, int $max_redirs = 3, bool $secure = true)
     {
         // (Getting the value)
         $parsed = self::parse( $request );
+
+
+
+        // (Getting the value)
+        $url = 'http' . ( $secure ? 's' : '' ) . '://' . $host . $parsed['path'];
 
 
 
